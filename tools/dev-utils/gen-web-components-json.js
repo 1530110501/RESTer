@@ -64,7 +64,7 @@ async function getWebComponentsInFile(file) {
     const webComponents = classes.map(statement => {
         const body = statement.body.body;
         const is = body.find(statement => isStaticGetter(statement, 'is'));
-        const label = is.body.body.find(
+        const name = is.body.body.find(
             statement => statement.type === 'ReturnStatement'
         ).argument.value;
         const properties = body.find(statement =>
@@ -74,16 +74,16 @@ async function getWebComponentsInFile(file) {
             ? properties.body.body
                   .find(statement => statement.type === 'ReturnStatement')
                   .argument.properties.map(property => {
-                      const label = camelToKebabCase(property.key.name);
+                      const name = camelToKebabCase(property.key.name);
                       return {
-                          label,
+                          name,
                           description: ''
                       };
                   })
             : [];
 
         return {
-            label,
+            name,
             description: '',
             attributes
         };
@@ -95,7 +95,10 @@ async function getWebComponentsInFile(file) {
 async function main() {
     const files = await readdirRecursive('src/site');
     const jsFiles = files.filter(file => file.endsWith('.js'));
-    const webComponents = { tags: [] };
+    const webComponents = {
+        version: 1,
+        tags: []
+    };
     for (const file of jsFiles) {
         console.log('Reading Web Components in file', file);
         webComponents.tags.push(...(await getWebComponentsInFile(file)));
